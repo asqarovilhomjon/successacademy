@@ -40,6 +40,26 @@ export default function Leads() {
     const [selectedTeacher, setSelectedTeacher] = useState<string | undefined>(undefined);
     const [selectedTime, setSelectedTime] = useState<string | undefined>(undefined);
     const [selectedLeadSource, setSelectedLeadSource] = useState<string | undefined>(undefined);
+    const [subjects, setSubjects] = useState<{ id: number; name: string }[]>([]);
+    const [loadingSubjects, setLoadingSubjects] = useState(false);
+
+    useEffect(() => {
+        const fetchSubjects = async () => {
+            setLoadingSubjects(true);
+            try {
+                const response = await fetch("https://test.api.mydays.uz/");
+                if (!response.ok) throw new Error("Failed to fetch subjects");
+                const data = await response.json();
+                setSubjects(data); 
+            } catch (error) {
+                console.error("Error fetching subjects:", error);
+            } finally {
+                setLoadingSubjects(false);
+            }
+        };
+    
+        fetchSubjects();
+    }, []);
     
 
     const isFormValid = firstName && lastName && phoneNumber.length === 13 && selectedSubject && (!showMore || (selectedLessonType && selectedTeacher && selectedTime && selectedLeadSource));
@@ -173,10 +193,20 @@ export default function Leads() {
                         </div>
                         <div className="flex flex-col mb-[5px]">
                             <label className="text-[#334D6E] text-sm mb-[5px]">Select subject</label>
-                            <Select value={selectedSubject} onChange={setSelectedSubject} placeholder="Select" className="w-[210px] min-h-[45px]">
-                                <Option value="math">Math</Option>
-                                <Option value="english">English</Option>
+                            <Select 
+                                value={selectedSubject} 
+                                onChange={setSelectedSubject} 
+                                placeholder="Select" 
+                                className="w-[210px] min-h-[45px]"
+                                loading={loadingSubjects} // Ma'lumot yuklanayotganda loader ko'rsatish
+                            >
+                                {subjects.map((subject) => (
+                                    <Option key={subject.id} value={subject.id.toString()}>
+                                        {subject.name}
+                                    </Option>
+                                ))}
                             </Select>
+
                         </div>
                         {showMore && (
                             <>
